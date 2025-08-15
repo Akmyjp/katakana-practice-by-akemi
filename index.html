@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>隨機測試日文片假名</title>
+<link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Comic Neue', cursive;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #FFD0D0, #FFF1F5);
+    margin: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  h1 {
+    font-size: 2rem;
+    color: #FF69B4;
+    margin-bottom: 40px;
+    text-align: center;
+    z-index: 2;
+  }
+
+  #kana {
+    font-size: 6rem;
+    color: #FF69B4;
+    margin-bottom: 20px;
+    z-index: 2;
+  }
+
+  .button-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+    z-index: 2;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .volume-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    z-index: 2;
+  }
+
+  button {
+    background-color: #FFB6C1;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 1.2rem;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(255,105,180,0.4);
+    transition: all 0.2s;
+  }
+
+  button:hover {
+    background-color: #FF69B4;
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(255,105,180,0.5);
+  }
+
+  button:active {
+    transform: scale(0.95);
+  }
+
+  footer {
+    position: fixed;
+    bottom: 10px;
+    font-size: 1rem;
+    color: #FF1493;
+    text-align: center;
+    width: 100%;
+    z-index: 2;
+  }
+
+  .sakura, .snow {
+    position: fixed;
+    top: -50px;
+    width: 20px;
+    height: 20px;
+    opacity: 0.8;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .sakura {
+    background-image: url('https://cdn.pixabay.com/photo/2017/01/31/13/14/pink-2025403_1280.png');
+    background-size: cover;
+    animation: fallSakura linear infinite;
+  }
+
+  .snow {
+    background-color: white;
+    border-radius: 50%;
+    animation: fallSnow linear infinite;
+  }
+
+  @keyframes fallSakura {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(110vh) rotate(360deg); }
+  }
+
+  @keyframes fallSnow {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(110vh) rotate(180deg); }
+  }
+
+  #timer {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    font-size: 1.2rem;
+    color: #FF69B4;
+    background: rgba(255, 182, 193, 0.3);
+    padding: 5px 10px;
+    border-radius: 15px;
+    z-index: 2;
+  }
+
+  #volumeControl {
+    width: 120px;
+  }
+</style>
+</head>
+<body>
+  <div id="timer">--:--:--</div>
+  <h1>隨機測試日文片假名</h1>
+  <div id="kana">ア</div>
+  
+  <!-- 按鈕區 -->
+  <div class="button-container">
+    <button id="nextButton">下一個</button>
+    <button id="speakButton">發音 🔊</button>
+    <button id="forgotButton">沒記住</button>
+    <button id="showForgotButton">查看沒記住</button>
+  </div>
+
+  <!-- 音量控制區 -->
+  <div class="volume-container">
+    <label for="volumeControl">音量 🎵</label>
+    <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1">
+  </div>
+
+  <footer>💖 日文老師 Akemi 敬上</footer>
+
+  <audio id="bgMusic" autoplay loop>
+    <source src="220_BPM86.mp3" type="audio/mpeg">
+  </audio>
+
+<script>
+const kanaList = [
+  "ア","イ","ウ","エ","オ",
+  "カ","キ","ク","ケ","コ",
+  "サ","シ","ス","セ","ソ",
+  "タ","チ","ツ","テ","ト",
+  "ナ","ニ","ヌ","ネ","ノ",
+  "ハ","ヒ","フ","ヘ","ホ",
+  "マ","ミ","ム","メ","モ",
+  "ヤ","ユ","ヨ",
+  "ラ","リ","ル","レ","ロ",
+  "ワ","ン"
+];
+
+const kanaDiv = document.getElementById("kana");
+const nextButton = document.getElementById("nextButton");
+const speakButton = document.getElementById("speakButton");
+const forgotButton = document.getElementById("forgotButton");
+const showForgotButton = document.getElementById("showForgotButton");
+const bgMusic = document.getElementById("bgMusic");
+const volumeControl = document.getElementById("volumeControl");
+const timerDiv = document.getElementById("timer");
+
+let femaleJapaneseVoice = null;
+let forgottenKana = [];
+
+// 音量控制
+bgMusic.volume = volumeControl.value;
+volumeControl.addEventListener("input", () => {
+  bgMusic.volume = volumeControl.value;
+});
+
+// 載入 Kyoko 語音
+function loadKyokoVoice() {
+  return new Promise(resolve => {
+    const voices = speechSynthesis.getVoices();
+    if (voices.length) {
+      femaleJapaneseVoice = voices.find(v => v.name.includes("Kyoko"));
+      if (!femaleJapaneseVoice) femaleJapaneseVoice = voices.find(v => v.lang.startsWith("ja"));
+      resolve();
+    } else {
+      speechSynthesis.onvoiceschanged = () => {
+        const voices = speechSynthesis.getVoices();
+        femaleJapaneseVoice = voices.find(v => v.name.includes("Kyoko"));
+        if (!femaleJapaneseVoice) femaleJapaneseVoice = voices.find(v => v.lang.startsWith("ja"));
+        resolve();
+      };
+    }
+  });
+}
+
+function getRandomKana() {
+  return kanaList[Math.floor(Math.random() * kanaList.length)];
+}
+
+nextButton.addEventListener("click", () => {
+  kanaDiv.textContent = getRandomKana();
+});
+
+speakButton.addEventListener("click", async () => {
+  await loadKyokoVoice();
+  if (!femaleJapaneseVoice) { alert("抱歉，找不到 Kyoko 語音。"); return; }
+  const utterance = new SpeechSynthesisUtterance(kanaDiv.textContent);
+  utterance.voice = femaleJapaneseVoice;
+  utterance.lang = "ja-JP";
+  utterance.rate = 0.8;
+  speechSynthesis.speak(utterance);
+});
+
+forgotButton.addEventListener("click", () => {
+  const currentKana = kanaDiv.textContent;
+  if (!forgottenKana.includes(currentKana)) forgottenKana.push(currentKana);
+  kanaDiv.textContent = getRandomKana();
+});
+
+showForgotButton.addEventListener("click", () => {
+  if (forgottenKana.length === 0) {
+    alert("太棒了！你沒有沒記住的片假名 🎉");
+  } else {
+    alert("沒記住的片假名:\n" + forgottenKana.join(" "));
+  }
+});
+
+// 生成櫻花和雪花
+function createFalling() {
+  const sakura = document.createElement("div");
+  sakura.classList.add("sakura");
+  sakura.style.left = Math.random() * 100 + "vw";
+  sakura.style.animationDuration = (5 + Math.random() * 5) + "s";
+  document.body.appendChild(sakura);
+  setTimeout(() => { sakura.remove(); }, 10000);
+
+  const snow = document.createElement("div");
+  snow.classList.add("snow");
+  snow.style.left = Math.random() * 100 + "vw";
+  snow.style.width = (5 + Math.random() * 10) + "px";
+  snow.style.height = snow.style.width;
+  snow.style.animationDuration = (5 + Math.random() * 5) + "s";
+  snow.style.opacity = 0.6 + Math.random() * 0.4;
+  document.body.appendChild(snow);
+  setTimeout(() => { snow.remove(); }, 10000);
+}
+setInterval(createFalling, 300);
+
+// 計時器改為當地時間
+setInterval(() => {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  timerDiv.textContent = `${h}:${m}:${s}`;
+}, 1000);
+</script>
+</body>
+</html>
