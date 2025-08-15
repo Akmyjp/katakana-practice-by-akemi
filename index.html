@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>隨機測試日文片假名</title>
 <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+
+<!-- SEO Meta -->
+<meta name="description" content="隨機片假名測試網站～可愛、互動學習～當地時間～日文老師 Akemi">
+<meta name="keywords" content="日文, 片假名, 隨機測試, Japanese, Katakana, 互動學習, Akemi, 日文老師, 練習, 発音, カタカナランダム">
+
 <style>
   body {
     font-family: 'Comic Neue', cursive;
@@ -28,7 +33,7 @@
   }
 
   #kana {
-    font-size: 10rem;
+    font-size: 8rem; /* 中間片假名變大 */
     color: #FF69B4;
     margin-bottom: 20px;
     z-index: 2;
@@ -137,8 +142,7 @@
   <div id="timer">--:--:--</div>
   <h1>隨機測試日文片假名</h1>
   <div id="kana">ア</div>
-  
-  <!-- 按鈕區 -->
+
   <div class="button-container">
     <button id="nextButton">下一個</button>
     <button id="speakButton">發音 🔊</button>
@@ -146,7 +150,6 @@
     <button id="showForgotButton">查看沒記住</button>
   </div>
 
-  <!-- 音量控制區 -->
   <div class="volume-container">
     <label for="volumeControl">音量 🎵</label>
     <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1">
@@ -262,7 +265,7 @@ function createFalling() {
 }
 setInterval(createFalling, 300);
 
-// 計時器改為當地時間
+// 當地時間計時器
 setInterval(() => {
   const now = new Date();
   const h = String(now.getHours()).padStart(2,'0');
